@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Untrusted text check",
+  "description": "When browser code changes, make sure text from phones is never rendered as HTML.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["kit/client/**/*.js", "kit/demo/**/*.js", "apps/**/*.js"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Browser code changed. Search the edited file for innerHTML, outerHTML, insertAdjacentHTML and document.write. Any value that came from a phone, a WebSocket message or a URL parameter must be rendered with textContent or DOM nodes, never as HTML. Also check that no motion control was added without a touch alternative (product steering). Fix any problem you find and say what you changed."
+  }
+}

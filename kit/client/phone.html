@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0710">
+  <title>POSSESSED: join</title>
+  <link rel="stylesheet" href="/kit/client/phone.css">
+</head>
+<body>
+  <main id="app">
+    <header>
+      <p class="brand">POSSESSED</p>
+      <p class="room">Room <strong id="room">----</strong></p>
+      <p id="link" class="link" role="status" aria-live="polite">Connecting…</p>
+    </header>
+
+    <!-- Step 1: one tap, so iPhones can ask for motion permission. -->
+    <section id="start" class="panel">
+      <h1>Lend the room your hands</h1>
+      <p>Lay your phone flat, like a tray. Tilting it moves the spirit together with everyone else.</p>
+      <button id="go" class="big" type="button">Possess the screen</button>
+      <p class="fine">No app, no account. Your motion data is used only while this page is open.</p>
+    </section>
+
+    <!-- Step 2: tilt mode. -->
+    <section id="tilt" class="panel" hidden>
+      <div class="gauge" aria-hidden="true"><div id="dot" class="dot"></div></div>
+      <p class="hint">Tilt gently. Keep the phone flat to rest.</p>
+      <div class="row">
+        <button id="calibrate" type="button">This is level</button>
+        <button id="to-pad" type="button">Use touch instead</button>
+      </div>
+    </section>
+
+    <!-- Fallback and accessibility alternative: drag with a finger. -->
+    <section id="pad" class="panel" hidden>
+      <div id="padArea" class="pad" role="application" aria-label="Touch pad. Drag to steer, lift to rest.">
+        <div id="padDot" class="dot"></div>
+      </div>
+      <p class="hint" id="padHint">Drag inside the circle. Lift your finger to rest.</p>
+      <div class="row">
+        <button id="to-tilt" type="button">Use tilt instead</button>
+      </div>
+    </section>
+
+    <section id="stopped" class="panel" hidden>
+      <h1 id="stoppedTitle">Disconnected</h1>
+      <p id="stoppedText"></p>
+      <button id="retry" class="big" type="button">Try again</button>
+    </section>
+
+    <footer>
+      <span id="screenState">Screen: waiting</span>
+      <span id="net">-- ms</span>
+    </footer>
+  </main>
+  <script type="module" src="/kit/client/phone.js"></script>
+</body>
+</html>

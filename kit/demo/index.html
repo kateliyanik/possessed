@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POSSESSED: feasibility test</title>
+  <link rel="stylesheet" href="/demo/demo.css">
+</head>
+<body>
+  <main>
+    <aside class="side">
+      <p class="brand">POSSESSED · Pit Stop 1</p>
+      <h1>Feasibility test</h1>
+
+      <div class="join">
+        <img id="qr" alt="QR code to join this room" width="220" height="220">
+        <p>Scan, or open <span id="joinUrl" class="mono">…</span></p>
+        <p class="code">Room <strong id="room">----</strong></p>
+        <p id="httpsWarn" class="warn" hidden>This page is on http. iPhones need an https link for tilt. Run <span class="mono">cloudflared tunnel --url http://localhost:8787</span> and open the https address it prints.</p>
+      </div>
+
+      <h2>Checklist</h2>
+      <ul id="checks" class="checks"></ul>
+      <p id="verdict" class="verdict" role="status" aria-live="polite">Waiting for phones…</p>
+      <button id="copy" type="button">Copy results</button>
+      <button id="newRoom" type="button" class="quiet">New room</button>
+    </aside>
+
+    <section class="stage">
+      <canvas id="field" aria-label="Crowd position. The bright spirit is the room's combined tilt; faint marks are individual phones."></canvas>
+      <div class="hud">
+        <span id="status">Connecting…</span>
+        <span id="count">0 phones</span>
+      </div>
+      <table class="phones" aria-label="Connected phones">
+        <thead><tr><th>Phone</th><th>Device</th><th>Round trip</th><th>Inputs/s</th><th>Joins</th><th>Share</th></tr></thead>
+        <tbody id="phoneRows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script type="module" src="/demo/demo.js"></script>
+</body>
+</html>

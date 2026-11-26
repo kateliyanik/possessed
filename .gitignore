@@ -1,0 +1,13 @@
+# Dependencies and local files
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+
+# Private planning notes. Keep them out of the public repo.
+Rules.md
+Rules/
+Kiroween 2026 *.md
+
+# Never ignore .kiro: the hackathon requires it in the repo.

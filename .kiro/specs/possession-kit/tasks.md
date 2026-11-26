@@ -1,0 +1,26 @@
+# Tasks: PossessionKit
+
+- [x] 1. Protocol and validation
+  - [x] 1.1 `parseClientMessage` with size limit, role-specific hello, input clamping, stats and ping (Req 4.1, 3.1, 3.2)
+  - [x] 1.2 Property tests: never throws, clamps, only known fields, UTF-8 length
+- [x] 2. Fair aggregation
+  - [x] 2.1 Latest-per-player tilt mean, sequence check, stale window, clear on leave (Req 3.3–3.6)
+  - [x] 2.2 Order-independent summation (Req 3.7)
+  - [x] 2.3 Influence shares, shake mean, distinct tap count
+  - [x] 2.4 Property tests against a reference model, spam, replay, rejoin (Req 3.8)
+- [x] 3. Room server
+  - [x] 3.1 Room registry: codes without I/O, secret key, reclaim, grace period, phone limit (Req 1)
+  - [x] 3.2 WebSocket relay with role checks, rate limit, hello timeout, heartbeats (Req 4)
+  - [x] 3.3 Phone replacement without `left`; late-joiner state (Req 2.3, 2.6)
+  - [x] 3.4 Static files with path safety; QR endpoint (Req 1.6, 4.5)
+  - [x] 3.5 Integration tests and a 50-phone load test
+- [x] 4. Browser SDKs
+  - [x] 4.1 Reconnecting socket with backoff and final close codes (Req 2.4)
+  - [x] 4.2 Motion: permission from a tap, calibration, rotation, no-data detection (Req 2.7)
+  - [x] 4.3 Phone SDK: persistent player ID, coalesced 20 Hz tilt with keepalive, stats
+  - [x] 4.4 Screen SDK: room reclaim, player tracking, rejoin count, throttled broadcast
+- [x] 5. Phone page with tilt and touch-pad modes (Req 2.8)
+- [x] 6. Feasibility screen with checklist and copyable results (Req 5.1, 5.2)
+- [x] 7. Crowd simulator (Req 5.3)
+- [ ] 8. Real-device feasibility test (human: Pit Stop 1)
+- [ ] 9. Phase 2 hardening: shake detection on phones, tap UI, reconnect-sequence PBT over the server

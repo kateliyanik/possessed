@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Protocol guard",
+  "description": "When the shared protocol or aggregation changes, check fairness and trust-boundary rules and run the tests.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["kit/shared/**/*.js"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file in kit/shared changed. 1) Check the change against .kiro/steering/architecture.md and Requirements 3 and 4 in .kiro/specs/possession-kit/requirements.md: every client message still goes through parseClientMessage, numbers are clamped, one phone still has one vote, and results stay order-independent. 2) If a new message type or field was added, make sure test/protocol.test.js covers it, including a property test. 3) Run `npm test`. Report any rule the change breaks before doing anything else."
+  }
+}

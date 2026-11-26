@@ -1,0 +1,42 @@
+:root {
+  --bg: #0b0710;
+  --panel: #150e19;
+  --ink: #efe6d8;
+  --dim: #a79c8f;
+  --ember: #ff8a3d;
+  --ghost: #9be7d8;
+  --ok: #7ee08a;
+  --bad: #ff5d6c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { display: grid; grid-template-columns: 340px 1fr; height: 100%; }
+.side { background: var(--panel); padding: 20px; overflow: auto; border-right: 1px solid #2a1d30; }
+.brand { margin: 0; letter-spacing: 0.25em; color: var(--ember); font-size: 0.75rem; font-weight: 700; }
+h1 { margin: 6px 0 16px; font-size: 1.5rem; }
+h2 { font-size: 1rem; margin: 20px 0 8px; color: var(--dim); }
+.join { text-align: center; }
+.join img { background: #fff; padding: 8px; border-radius: 10px; width: 220px; height: 220px; }
+.join p { margin: 8px 0 0; font-size: 0.85rem; color: var(--dim); word-break: break-all; }
+.code strong { color: var(--ink); font-size: 1.6rem; letter-spacing: 0.25em; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+.warn { color: var(--bad) !important; text-align: left; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.checks li { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px; align-items: baseline; font-size: 0.9rem; }
+.checks .mark { font-weight: 700; color: var(--dim); }
+.checks li.pass .mark { color: var(--ok); }
+.checks .detail { color: var(--dim); font-size: 0.8rem; }
+.verdict { margin: 14px 0; padding: 10px; border-radius: 8px; background: #1f1524; font-weight: 600; }
+.verdict.pass { background: #13321a; color: var(--ok); }
+button { font: inherit; color: var(--ink); background: #2a1d30; border: 1px solid #4a3550; border-radius: 8px; padding: 8px 12px; margin-right: 6px; }
+button.quiet { background: transparent; }
+button:focus-visible { outline: 3px solid var(--ghost); outline-offset: 2px; }
+.stage { position: relative; display: grid; grid-template-rows: 1fr auto; min-height: 0; }
+canvas { width: 100%; height: 100%; display: block; }
+.hud { position: absolute; top: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; color: var(--dim); font-size: 0.9rem; pointer-events: none; }
+.phones { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--panel); }
+.phones th, .phones td { text-align: left; padding: 6px 12px; border-top: 1px solid #2a1d30; }
+.phones th { color: var(--dim); font-weight: 500; }
+.phones tr.offline td { color: #6b6170; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; height: auto; } .stage { height: 70vh; } }
