@@ -77,7 +77,7 @@ If a phase slips, cut in this order: voice input, LLM features, Crew bot extras.
 
 ### Decisions needed from you
 - [x] Licence and commit name: Nikhil, GitHub private address `219089655+kateliyanik@users.noreply.github.com`, set for this repo only (not global).
-- [ ] GitHub account is `kateliyanik`. Still needed: repo name, and approval to create it as a **public** repo and push. Nothing has been pushed yet.
+- [x] Public repo: https://github.com/kateliyanik/possessed (MIT licence detected, `.kiro` visible). This repo pushes with the active `gh` account; run `gh auth status` and make sure `kateliyanik` is active before pushing.
 - [ ] Hosting choice for the public demo (decide by Phase 7).
 
 ### Result
