@@ -22,7 +22,7 @@ Submission closes **Fri 4 Dec 2026, 2:00 pm PT (Sat 5 Dec, 3:30 am IST)**. Targe
 
 | Phase | Goal | Target date | Status |
 |---|---|---|---|
-| 1 | Core kit + feasibility test | Thu 26 Nov | Code done, waiting for real-phone test |
+| 1 | Core kit + feasibility test | Thu 26 Nov | **Done 26 Nov: real-phone test PASS** |
 | 2 | Kit hardening (shake/tap, touch-first option, reconnect PBT) | Fri 27 Nov | **Done 26 Nov** |
 | 3 | App 1: Spirit Board | Fri 27 – Sat 28 Nov | Not started |
 | 4 | App 2: Possessed Talk | Sun 29 Nov | Not started |
@@ -36,7 +36,7 @@ If a phase slips, cut in this order: voice input, LLM features, Crew bot extras.
 
 ---
 
-## Pit Stop 1: Feasibility gate (YOU ARE HERE)
+## Pit Stop 1: Feasibility gate (PASSED)
 
 ### Done
 - [x] Project structure, MIT licence, `.gitignore` (does not ignore `.kiro`; does ignore private planning notes).
@@ -81,8 +81,30 @@ If a phase slips, cut in this order: voice input, LLM features, Crew bot extras.
 - [x] Public repo: https://github.com/kateliyanik/possessed (MIT licence detected, `.kiro` visible). This repo pushes with the active `gh` account; run `gh auth status` and make sure `kateliyanik` is active before pushing.
 - [ ] Hosting choice for the public demo (decide by Phase 7).
 
-### Result
-_(fill in after the test)_
+### Result: PASS (26 Nov 2026)
+
+```
+POSSESSED Pit Stop 1 result (2026-11-26T13:11:33.861Z)
+Page: https://thereof-linear-vehicle-britney.trycloudflare.com
+Test length: 14:11
+PASS Two or more phones connected (max 2)
+PASS An iPhone joined
+PASS An Android phone joined
+PASS Phones moved the spirit
+PASS A phone rejoined by itself (1 rejoins)
+PASS 10 minutes with 2+ phones (10:23 / 10:00)
+PASS Median round trip under 150 ms (116 ms)
+Phones:
+  p11732x android joins=2 rtt=116 hz=0
+  p63266k ios joins=1 rtt=115 hz=0
+```
+
+Decision: tilt control is viable on iPhone and Android. Continue with tilt as the main input.
+
+Open notes:
+- The report has no "Other controls" section, so the screen page was loaded before the Pit Stop 2 changes. Choice, tap, shake and the reconnect fix have **not** been tried on real phones yet. Re-check them briefly at the start of the Pit Stop 3 real-phone test.
+- Both phones showed 0 inputs/s at the moment of copying. A phone that is tilting sends at least 2–3 per second, so at that moment neither was sending tilt (for example, finger lifted on the touch pad, or the page in the background). Worth watching in the next test.
+- No notes yet on how it felt (lag, drift, jumpiness).
 
 ---
 
@@ -94,7 +116,7 @@ _(fill in after the test)_
 - [x] PBT for reconnect sequences (any order of join/leave/rejoin gives one vote per phone). Model-based, over real sockets, 1500 runs (`test/reconnect.test.js`).
 - [x] Record any bug PBT catches in `docs/kiro-usage-log.md`. **Caught one:** an older tab that reconnected after a newer tab had zero influence. Fixed with per-connection epochs; regression test added; verified the tests fail without the fix.
 
-## Pit Stop 3: Spirit Board
+## Pit Stop 3: Spirit Board (YOU ARE HERE)
 - [ ] Spec in `.kiro/specs/spirit-board/`.
 - [ ] Original spirit-board design (do not use the word "Ouija" anywhere).
 - [ ] Planchette physics, letter dwell detection, answer reveal.
@@ -136,3 +158,4 @@ _(fill in after the test)_
 |---|---|---|
 | 26 Nov 2026 | Phase 1 built in the `Kiroween 2026` folder: protocol, aggregation, server, phone page, feasibility screen, simulator, 39 passing tests, Kiro spec/steering/hooks. Pushed to github.com/kateliyanik/possessed. | Request Kiro credits. Then run the Pit Stop 1 test on real phones and paste the result. |
 | 26 Nov 2026 | Pit Stop 2 done (ahead of the real-phone test). Reconnect property test found and shrank a real bug (older reconnecting tab lost its vote); fixed with connection epochs. Added choice/tap/shake, screen-chosen phone controls, touch-first option, headless Chrome test. 62 unit/integration tests + 25 browser checks pass. | Run the Pit Stop 1 real-phone test (now also covers choice/tap/shake). If it passes, start Pit Stop 3 (Spirit Board). Pit Stop 3 can start before the test, but its tilt feel depends on the result. |
+| 26 Nov 2026 | Pit Stop 1 real-phone test: **PASS** (iPhone + Android, 14 min, 1 automatic rejoin, median round trip 116 ms). The test ran on the Pit Stop 1 page, so the Pit Stop 2 controls are still untested on real phones. | Start Pit Stop 3: write the Spirit Board spec. |
