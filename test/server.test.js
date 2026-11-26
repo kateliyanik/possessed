@@ -81,11 +81,13 @@ test('phone joins, screen is told, inputs are relayed with the player id', async
   const pw = await p.next('welcome');
   assert.equal(pw.screenOnline, true);
   const joined = await s.next('joined');
-  assert.deepEqual(joined, { t: 'joined', id: 'phoneA', device: 'ios', replaced: false });
+  assert.ok(Number.isSafeInteger(joined.e) && joined.e > 0);
+  assert.deepEqual(joined, { t: 'joined', id: 'phoneA', device: 'ios', replaced: false, e: joined.e });
 
   p.send({ t: 'input', kind: 'tilt', seq: 1, x: 5, y: -0.5 });
   const input = await s.next('input');
-  assert.deepEqual(input, { t: 'input', kind: 'tilt', seq: 1, x: 1, y: -0.5, id: 'phoneA' });
+  // Relayed with the player id and the connection epoch from the server.
+  assert.deepEqual(input, { t: 'input', kind: 'tilt', seq: 1, x: 1, y: -0.5, id: 'phoneA', e: joined.e });
 
   p.close();
   const left = await s.next('left');

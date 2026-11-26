@@ -26,6 +26,7 @@ Requires Node.js 20 or newer.
 npm install
 npm start          # http://localhost:8787
 npm test           # property-based, integration and load tests
+npm run test:browser   # real pages in headless Chrome (needs Chrome installed)
 ```
 
 Open `http://localhost:8787/demo/` on a laptop or projector.
@@ -49,9 +50,21 @@ npm run sim -- --room ABCD --phones 50
 - Only each phone's latest input counts, so sending faster gives no extra influence.
 - Inputs carry increasing sequence numbers; replays and out-of-order messages are ignored.
 - Phones that go quiet drop out after 1.5 seconds; phones that disconnect drop out at once.
+- A phone that reconnects, or switches back to an older tab, keeps exactly one vote.
+- Multiple-choice votes count once per phone, per question.
 - The combined result is exactly the same whatever order phones join in.
 
-These rules are checked with property-based tests in `test/aggregate.test.js`.
+These rules are checked with property-based tests in `test/aggregate.test.js` and `test/reconnect.test.js`. The reconnect test runs random sequences of tabs opening, dropping and reconnecting over real sockets. It found a real bug during development; see `docs/kiro-usage-log.md`.
+
+## Phone controls
+
+The screen picks what every phone shows, by putting a `ui` object in the state it broadcasts:
+
+```js
+screen.broadcast({ ui: { mode: 'choice', prompt: 'Pick one', options: ['Yes', 'No'], round: 1 } });
+```
+
+Modes: `tilt`, `choice`, `tap`, `shake`, `wait`. Every motion control has a touch alternative: drag a pad instead of tilting, tap fast instead of shaking.
 
 ## License
 

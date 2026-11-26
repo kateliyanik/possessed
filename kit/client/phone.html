@@ -15,33 +15,62 @@
       <p id="link" class="link" role="status" aria-live="polite">Connecting…</p>
     </header>
 
-    <!-- Step 1: one tap, so iPhones can ask for motion permission. -->
+    <!-- The screen's question or instruction, for every mode. -->
+    <p id="prompt" class="prompt" aria-live="polite" hidden></p>
+
+    <!-- Start: one tap, so iPhones can ask for motion permission. -->
     <section id="start" class="panel">
       <h1>Lend the room your hands</h1>
       <p>Lay your phone flat, like a tray. Tilting it moves the spirit together with everyone else.</p>
-      <button id="go" class="big" type="button">Possess the screen</button>
-      <p class="fine">No app, no account. Your motion data is used only while this page is open.</p>
+      <button id="go" class="big" type="button">Possess with tilt</button>
+      <button id="goTouch" type="button">Use touch controls instead</button>
+      <p class="fine">No app, no account. Motion data is used only while this page is open and is never stored.</p>
     </section>
 
-    <!-- Step 2: tilt mode. -->
+    <!-- Tilt with motion sensors. -->
     <section id="tilt" class="panel" hidden>
       <div class="gauge" aria-hidden="true"><div id="dot" class="dot"></div></div>
       <p class="hint">Tilt gently. Keep the phone flat to rest.</p>
       <div class="row">
         <button id="calibrate" type="button">This is level</button>
-        <button id="to-pad" type="button">Use touch instead</button>
+        <button id="toPad" type="button">Use touch instead</button>
       </div>
     </section>
 
-    <!-- Fallback and accessibility alternative: drag with a finger. -->
+    <!-- Tilt with a finger: the touch alternative. -->
     <section id="pad" class="panel" hidden>
       <div id="padArea" class="pad" role="application" aria-label="Touch pad. Drag to steer, lift to rest.">
         <div id="padDot" class="dot"></div>
       </div>
       <p class="hint" id="padHint">Drag inside the circle. Lift your finger to rest.</p>
       <div class="row">
-        <button id="to-tilt" type="button">Use tilt instead</button>
+        <button id="toTilt" type="button">Use tilt instead</button>
       </div>
+    </section>
+
+    <!-- Multiple choice. -->
+    <section id="choice" class="panel" hidden>
+      <div id="options" class="options" role="group" aria-label="Answers"></div>
+      <p class="hint" id="choiceHint">Tap an answer. You can change it.</p>
+    </section>
+
+    <!-- Tap. -->
+    <section id="tap" class="panel" hidden>
+      <button id="tapBtn" class="big round" type="button">Tap</button>
+      <p class="hint">Tap when the screen tells you to.</p>
+    </section>
+
+    <!-- Shake, with tapping fast as the touch alternative. -->
+    <section id="shake" class="panel" hidden>
+      <div class="meter" aria-hidden="true"><div id="shakeLevel" class="level"></div></div>
+      <button id="shakeBtn" class="big round" type="button">Tap fast</button>
+      <p class="hint" id="shakeHint">Shake your phone, or tap the button as fast as you can.</p>
+    </section>
+
+    <!-- Waiting for the screen. -->
+    <section id="wait" class="panel" hidden>
+      <div class="breath" aria-hidden="true"></div>
+      <p class="hint">Watch the screen.</p>
     </section>
 
     <section id="stopped" class="panel" hidden>

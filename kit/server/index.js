@@ -31,6 +31,9 @@ export function createServer({
 } = {}) {
   const registry = createRoomRegistry({ graceMs });
   const lastState = new Map(); // room code -> last state text sent to phones
+  // Every phone connection gets a larger epoch than any before it. The screen
+  // orders inputs by (epoch, seq), so a reconnecting phone always counts.
+  let nextEpoch = 0;
   const appRoots = findApps();
 
   const http = createHttpServer((req, res) => {
@@ -187,7 +190,10 @@ export function createServer({
       if (!room) return;
 
       if (conn.role === 'phone') {
-        if (room.screen) send(room.screen, { ...msg, id: conn.playerId });
+        // Ignore a connection that has already been replaced by a newer one
+        // for the same player; it may still be closing.
+        if (room.phones.get(conn.playerId)?.ws !== ws) return;
+        if (room.screen) send(room.screen, { ...msg, id: conn.playerId, e: conn.epoch });
       } else if (msg.t === 'state') {
         const text = JSON.stringify({ t: 'state', data: msg.data });
         lastState.set(room.code, text);
@@ -252,6 +258,7 @@ export function createServer({
     conn.role = 'phone';
     conn.room = msg.room;
     conn.playerId = msg.playerId;
+    conn.epoch = ++nextEpoch;
     const room = result.room;
     send(ws, {
       t: 'welcome',
@@ -265,7 +272,7 @@ export function createServer({
     const last = lastState.get(room.code);
     if (last) sendRaw(ws, last);
     if (room.screen) {
-      send(room.screen, { t: 'joined', id: msg.playerId, device: msg.device, replaced: result.replaced });
+      send(room.screen, { t: 'joined', id: msg.playerId, device: msg.device, replaced: result.replaced, e: conn.epoch });
     }
   }
 

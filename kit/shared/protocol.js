@@ -16,6 +16,9 @@ export const LIMITS = Object.freeze({
   rateBurst: 90,
   // Screens broadcast state, which can be frequent but must be bounded.
   screenRatePerSecond: 40,
+  // Multiple-choice questions offer at most this many options.
+  maxOptions: 8,
+  maxRound: 2 ** 31 - 1,
 });
 
 export const ROLES = Object.freeze(['screen', 'phone']);
@@ -25,7 +28,7 @@ export const ALLOWED = Object.freeze({
   screen: Object.freeze(['state', 'ping']),
   phone: Object.freeze(['input', 'stats', 'ping']),
 });
-export const INPUT_KINDS = Object.freeze(['tilt', 'tap', 'shake']);
+export const INPUT_KINDS = Object.freeze(['tilt', 'tap', 'shake', 'choice']);
 export const DEVICES = Object.freeze(['ios', 'android', 'desktop', 'sim', 'other']);
 
 // Room codes avoid I and O so they cannot be misread as 1 and 0.
@@ -130,7 +133,15 @@ function parseInput(data) {
     msg.x = clamp(data.x, -1, 1);
     msg.y = clamp(data.y, -1, 1);
   } else if (data.kind === 'shake') {
+    if (typeof data.v !== 'number') return fail('bad_shake');
     msg.v = clamp(data.v, 0, 1);
+  } else if (data.kind === 'choice') {
+    // An option index is not clamped: a wrong index must not turn into a
+    // vote for a different option.
+    if (!Number.isInteger(data.o) || data.o < 0 || data.o >= LIMITS.maxOptions) return fail('bad_choice');
+    if (!Number.isInteger(data.r) || data.r < 0 || data.r > LIMITS.maxRound) return fail('bad_round');
+    msg.o = data.o;
+    msg.r = data.r;
   }
   return ok(msg);
 }

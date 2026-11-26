@@ -12,6 +12,7 @@
     "start": "node kit/server/index.js",
     "dev": "node --watch kit/server/index.js",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:browser": "node test/browser/smoke.mjs",
     "sim": "node kit/tools/simulate.js"
   },
   "dependencies": {

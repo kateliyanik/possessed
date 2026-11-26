@@ -23,7 +23,7 @@ Submission closes **Fri 4 Dec 2026, 2:00 pm PT (Sat 5 Dec, 3:30 am IST)**. Targe
 | Phase | Goal | Target date | Status |
 |---|---|---|---|
 | 1 | Core kit + feasibility test | Thu 26 Nov | Code done, waiting for real-phone test |
-| 2 | Kit hardening (shake/tap, touch-first option, reconnect PBT) | Fri 27 Nov | Not started |
+| 2 | Kit hardening (shake/tap, touch-first option, reconnect PBT) | Fri 27 Nov | **Done 26 Nov** |
 | 3 | App 1: Spirit Board | Fri 27 – Sat 28 Nov | Not started |
 | 4 | App 2: Possessed Talk | Sun 29 Nov | Not started |
 | 5 | PossessionKit Kiro power, custom MCP server, hooks | Mon 30 Nov | Not started |
@@ -51,7 +51,7 @@ If a phase slips, cut in this order: voice input, LLM features, Crew bot extras.
 - [x] Smoke test of the running server: all pages, QR code and health check respond; server source is not served.
 
 ### Not yet verified
-- The browser pages have only been syntax-checked. They have not run in a real browser or on a phone yet. The real-phone test below is the first time.
+- The pages now run in headless desktop Chrome (`npm run test:browser`, 25 checks), with emulated tilt and touch. They have **not** run on a real iPhone or Android phone. Real sensors, iOS permission prompts, mobile Safari and real Wi-Fi are only tested by the steps below.
 - The hook files follow Kiro's `.kiro.hook` JSON format. Check that all four appear in Kiro's hooks panel.
 
 ### Your actions
@@ -64,6 +64,7 @@ If a phase slips, cut in this order: voice input, LLM features, Crew bot extras.
 4. Scan the QR code with an iPhone and an Android phone. Tap **Possess the screen** on each.
 5. Work through the checklist on the screen:
    - both phones move the crowd dot smoothly;
+   - use the **Test other controls** buttons (Choice, Tap, Shake) and try each on both phones; shake for real on at least one phone;
    - turn Wi-Fi off on one phone for ~5 seconds, then on; it must rejoin by itself;
    - leave it running for 10 minutes;
    - optional load test: `npm run sim -- --url wss://<address>/ws --room <CODE> --phones 50`.
@@ -86,11 +87,12 @@ _(fill in after the test)_
 ---
 
 ## Pit Stop 2: Kit hardening
-- [ ] Shake and tap inputs on the phone, with aggregation (majority, strongest wins).
-- [ ] Late-joiner state sync from screen to phones.
-- [ ] Touch-only controls as a first-class alternative to tilt (accessibility rule).
-- [ ] PBT for reconnect sequences (any order of join/leave/rejoin gives one vote per phone).
-- [ ] Record any bug PBT catches in `docs/kiro-usage-log.md` (needed for the write-up).
+- [x] Shake and tap inputs on the phone, with aggregation (majority, strongest wins). Also multiple choice with rounds; shake reports mean, strongest and room energy.
+- [x] Late-joiner state sync from screen to phones. The screen chooses phone controls (`kit/shared/ui.js`); late joiners and reconnects get the current ones; a screen reload resets phones to its controls.
+- [x] Touch-only controls as a first-class alternative to tilt (accessibility rule). Touch is offered on the start screen and remembered; shake has a tap-fast alternative.
+- [x] Headless Chrome test of the real pages: `npm run test:browser`, 25 checks passing (added; not in the original plan).
+- [x] PBT for reconnect sequences (any order of join/leave/rejoin gives one vote per phone). Model-based, over real sockets, 1500 runs (`test/reconnect.test.js`).
+- [x] Record any bug PBT catches in `docs/kiro-usage-log.md`. **Caught one:** an older tab that reconnected after a newer tab had zero influence. Fixed with per-connection epochs; regression test added; verified the tests fail without the fix.
 
 ## Pit Stop 3: Spirit Board
 - [ ] Spec in `.kiro/specs/spirit-board/`.
@@ -132,4 +134,5 @@ _(fill in after the test)_
 
 | Date | What happened | Next step |
 |---|---|---|
-| 26 Nov 2026 | Phase 1 built in the `Kiroween 2026` folder: protocol, aggregation, server, phone page, feasibility screen, simulator, 39 passing tests, Kiro spec/steering/hooks. Committed locally; nothing pushed. | Request Kiro credits. Then run the Pit Stop 1 test on real phones and paste the result. |
+| 26 Nov 2026 | Phase 1 built in the `Kiroween 2026` folder: protocol, aggregation, server, phone page, feasibility screen, simulator, 39 passing tests, Kiro spec/steering/hooks. Pushed to github.com/kateliyanik/possessed. | Request Kiro credits. Then run the Pit Stop 1 test on real phones and paste the result. |
+| 26 Nov 2026 | Pit Stop 2 done (ahead of the real-phone test). Reconnect property test found and shrank a real bug (older reconnecting tab lost its vote); fixed with connection epochs. Added choice/tap/shake, screen-chosen phone controls, touch-first option, headless Chrome test. 62 unit/integration tests + 25 browser checks pass. | Run the Pit Stop 1 real-phone test (now also covers choice/tap/shake). If it passes, start Pit Stop 3 (Spirit Board). Pit Stop 3 can start before the test, but its tilt feel depends on the result. |

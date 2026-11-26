@@ -12,13 +12,98 @@ const screen = createScreen({
     $('room').textContent = room;
     $('joinUrl').textContent = joinUrl;
     $('qr').src = screen.qrUrl();
+    // Tell phones which controls to show. After a screen reload the server
+    // still holds the previous state, so always send the current one.
+    screen.broadcast({ ui: currentUi }, { force: true });
   },
   onStatus(s) {
     $('status').textContent =
       s.state === 'open' ? 'Screen connected' : s.state === 'stopped' ? `Stopped (${s.reason})` : 'Reconnecting…';
   },
   onPlayers: () => {},
+  onInput(msg) {
+    seenKinds.add(msg.kind);
+    if (msg.kind === 'tap') tapTotal++;
+  },
 });
+
+// ---------- control modes ----------
+
+const seenKinds = new Set();
+let tapTotal = 0;
+let round = 0;
+const DEMO_OPTIONS = ['A haunted lighthouse', 'A cursed library', 'A silent train station'];
+const MODES = {
+  tilt: () => ({ mode: 'tilt', prompt: 'Tilt together to move the spirit.' }),
+  choice: () => ({ mode: 'choice', prompt: 'Where should the spirit go next?', options: DEMO_OPTIONS, round }),
+  tap: () => ({ mode: 'tap', prompt: 'Tap to wake the spirit.' }),
+  shake: () => ({ mode: 'shake', prompt: 'Shake to stir the spirit.' }),
+};
+let currentUi = MODES.tilt();
+
+function setMode(name) {
+  round++;
+  currentUi = MODES[name]();
+  screen.broadcast({ ui: currentUi }, { force: true });
+  for (const b of document.querySelectorAll('.modes button')) {
+    b.setAttribute('aria-pressed', String(b.dataset.mode === name));
+  }
+  $('modeView').hidden = name === 'tilt';
+  $('field').style.visibility = name === 'tilt' ? 'visible' : 'hidden';
+  renderModeView();
+}
+for (const b of document.querySelectorAll('.modes button')) {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+}
+
+const CONTROL_CHECKS = [
+  { label: 'A choice arrived', test: () => seenKinds.has('choice') },
+  { label: 'A tap arrived', test: () => seenKinds.has('tap') },
+  { label: 'A shake arrived', test: () => seenKinds.has('shake') },
+];
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function renderModeView() {
+  const view = $('modeView');
+  const online = screen.online().length;
+  if (currentUi.mode === 'choice') {
+    const t = screen.tally(currentUi.round, currentUi.options.length);
+    const rows = currentUi.options.map((label, i) => {
+      const row = el('div', `bar${t.leader === i ? ' lead' : ''}`);
+      const track = el('div', 'track');
+      const fill = el('div', 'fill');
+      fill.style.width = `${t.total ? (t.counts[i] / t.total) * 100 : 0}%`;
+      track.append(fill);
+      row.append(el('span', '', label), track, el('span', '', String(t.counts[i])));
+      return row;
+    });
+    view.replaceChildren(el('p', 'label', `${t.total} of ${online} phones voted`), ...rows);
+  } else if (currentUi.mode === 'tap') {
+    view.replaceChildren(
+      el('p', 'big', String(screen.taps(1500))),
+      el('p', 'label', `phones tapping now · ${tapTotal} taps in total`),
+    );
+  } else if (currentUi.mode === 'shake') {
+    const s = screen.shake(online);
+    const row = el('div', 'bar lead');
+    const track = el('div', 'track');
+    const fill = el('div', 'fill');
+    fill.style.width = `${Math.round(s.energy * 100)}%`;
+    track.append(fill);
+    row.append(el('span', '', 'Room energy'), track, el('span', '', `${Math.round(s.energy * 100)}%`));
+    view.replaceChildren(
+      el('p', 'big', `${s.n}`),
+      el('p', 'label', `phones shaking · strongest ${Math.round(s.peak * 100)}%`),
+      row,
+    );
+  }
+}
 
 // Show the https warning whenever the page itself is not on https.
 $('httpsWarn').hidden = location.protocol === 'https:';
@@ -219,7 +304,33 @@ setInterval(() => {
   const shares = new Map(screen.influence().map(({ id, share }) => [id, share]));
   renderPhones(shares);
   renderChecks();
+  renderControlChecks();
 }, 500);
+setInterval(() => {
+  if (currentUi.mode !== 'tilt') renderModeView();
+}, 200);
+
+function renderControlChecks() {
+  $('controlChecks').replaceChildren(
+    ...CONTROL_CHECKS.map((c) => {
+      const pass = c.test();
+      const li = el('li', pass ? 'pass' : '');
+      li.append(el('span', 'mark', pass ? '✓' : '○'), el('span', '', c.label), el('span', 'detail', ''));
+      return li;
+    }),
+  );
+}
+
+// For the automated browser test (test/browser/smoke.mjs). Read-only views.
+window.__possessed = Object.freeze({
+  room: () => screen.room,
+  tilt: () => screen.tilt(),
+  online: () => screen.online().length,
+  tally: () => screen.tally(currentUi.round, currentUi.options?.length ?? 0),
+  taps: () => tapTotal,
+  shake: () => screen.shake(screen.online().length),
+  seen: () => [...seenKinds],
+});
 
 $('copy').addEventListener('click', async () => {
   const lines = [
@@ -227,6 +338,8 @@ $('copy').addEventListener('click', async () => {
     `Page: ${location.origin}`,
     `Test length: ${fmtMin(Date.now() - startedAt)}`,
     ...CHECKS.map((c) => `${c.test() ? 'PASS' : 'FAIL'}  ${c.label}${c.detail ? ` (${c.detail()})` : ''}`),
+    'Other controls (optional):',
+    ...CONTROL_CHECKS.map((c) => `  ${c.test() ? 'PASS' : '----'}  ${c.label}`),
     'Phones:',
     ...screen.players().map((p) => `  ${p.id.slice(0, 7)} ${p.device} joins=${p.joins} rtt=${p.rtt ?? '-'} hz=${p.hz ?? '-'}`),
   ];

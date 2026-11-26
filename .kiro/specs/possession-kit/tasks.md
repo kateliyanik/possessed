@@ -23,4 +23,17 @@
 - [x] 6. Feasibility screen with checklist and copyable results (Req 5.1, 5.2)
 - [x] 7. Crowd simulator (Req 5.3)
 - [ ] 8. Real-device feasibility test (human: Pit Stop 1)
-- [ ] 9. Phase 2 hardening: shake detection on phones, tap UI, reconnect-sequence PBT over the server
+- [x] 9. Reconnect hardening
+  - [x] 9.1 Model-based reconnect property test over real sockets (`test/reconnect.test.js`)
+  - [x] 9.2 Fix the bug it found: per-connection epochs, (epoch, seq) ordering, relay only from the current connection (Req 3.9, 3.10)
+  - [x] 9.3 Regression test for the shrunk counterexample; confirmed the tests fail without the fix
+- [x] 10. More input kinds
+  - [x] 10.1 `choice` input with option index and round, validated not clamped; tally with rounds and ties (Req 3.11)
+  - [x] 10.2 Shake: mean, peak and room energy (Req 3.12); phone shake detection from `devicemotion`
+  - [x] 10.3 iOS permission for orientation and motion requested in the same tap
+- [x] 11. Screen-chosen phone controls (Req 6)
+  - [x] 11.1 `kit/shared/ui.js` schema with text cleaning; property tests
+  - [x] 11.2 Phone page: tilt, pad, choice, tap, shake and wait modes; touch-first start option; tap-fast shake alternative
+  - [x] 11.3 Screen SDK re-sends state after reconnecting; apps broadcast their ui on `onRoom`
+  - [x] 11.4 Feasibility screen can switch phones between modes
+- [x] 12. Headless Chrome smoke test of the real pages (`npm run test:browser`)

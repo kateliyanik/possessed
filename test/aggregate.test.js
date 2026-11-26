@@ -136,6 +136,32 @@ test('PBT: a player who left and rejoined still has exactly one vote', () => {
   );
 });
 
+test('PBT: a newer connection always wins; replays inside a connection never count', () => {
+  // Each event: [epoch, seq]. Acceptance must follow (epoch, seq) order.
+  fc.assert(
+    fc.property(fc.array(fc.tuple(fc.nat(5), fc.nat(1_000_000)), { minLength: 1, maxLength: 60 }), (events) => {
+      const agg = createAggregator();
+      let last = [0, -1];
+      for (const [e, seq] of events) {
+        const accepted = agg.accept('p', { kind: 'tap', seq, e }, 0);
+        const newer = e > last[0] || (e === last[0] && seq > last[1]);
+        assert.equal(accepted, newer, `epoch ${e} seq ${seq} after ${last}`);
+        if (newer) last = [e, seq];
+      }
+    }),
+  );
+});
+
+test('a reconnection with lower sequence numbers still counts', () => {
+  const agg = createAggregator();
+  // Newer tab: high seq, epoch 1. Older tab reconnects: low seq, epoch 2.
+  assert.equal(agg.accept('p', { kind: 'tilt', seq: 2_000_001, e: 1, x: 0.5, y: 0 }, 0), true);
+  assert.equal(agg.accept('p', { kind: 'tilt', seq: 1_000_001, e: 2, x: -0.8, y: 0 }, 0), true);
+  assert.equal(agg.tilt(0).x, -0.8);
+  // A late message from the replaced connection is ignored.
+  assert.equal(agg.accept('p', { kind: 'tilt', seq: 2_000_002, e: 1, x: 1, y: 0 }, 0), false);
+});
+
 test('stale inputs drop out after the window', () => {
   const agg = createAggregator({ staleMs: 1000 });
   agg.accept('a', { kind: 'tilt', seq: 1, x: 1, y: 0 }, 0);
@@ -175,5 +201,99 @@ test('taps count distinct players, shake is averaged', () => {
   assert.equal(agg.taps(30), 2);
   agg.accept('a', { kind: 'shake', seq: 3, v: 1 }, 0);
   agg.accept('b', { kind: 'shake', seq: 2, v: 0.5 }, 0);
-  assert.deepEqual(agg.shake(0), { v: 0.75, n: 2 });
+  assert.deepEqual(agg.shake(0), { v: 0.75, n: 2, peak: 1, energy: 0.75 });
+  // With 6 phones in the room, two shakers only fill a quarter of the meter.
+  assert.equal(agg.shake(0, 6).energy, 0.25);
+});
+
+// ---------- multiple choice ----------
+
+const vote = fc.tuple(fc.nat(9), fc.nat(7), fc.nat(2)); // [player, option, round]
+
+// Reference model: each player's last vote; count those in the round.
+function tallyModel(votes, round, optionCount) {
+  const last = new Map();
+  for (const [p, o, r] of votes) last.set(p, { o, r });
+  const counts = new Array(optionCount).fill(0);
+  for (const { o, r } of last.values()) if (r === round && o < optionCount) counts[o]++;
+  const best = Math.max(0, ...counts);
+  const leaders = counts.flatMap((n, i) => (n === best && n > 0 ? [i] : []));
+  return { counts, total: counts.reduce((a, b) => a + b, 0), leader: leaders.length === 1 ? leaders[0] : null };
+}
+
+test('PBT: tally matches the model (one vote per player, latest wins, round filter, ties)', () => {
+  fc.assert(
+    fc.property(fc.array(vote, { maxLength: 80 }), fc.nat(2), fc.integer({ min: 1, max: 8 }), (votes, round, optionCount) => {
+      const agg = createAggregator();
+      const seqs = new Map();
+      for (const [p, o, r] of votes) {
+        const seq = (seqs.get(p) ?? 0) + 1;
+        seqs.set(p, seq);
+        agg.accept(`p${p}`, { kind: 'choice', seq, o, r }, 0);
+      }
+      assert.deepEqual(agg.tally(round, optionCount), tallyModel(votes, round, optionCount));
+    }),
+  );
+});
+
+test('PBT: total votes never exceed the number of players', () => {
+  fc.assert(
+    fc.property(fc.array(vote, { maxLength: 80 }), (votes) => {
+      const agg = createAggregator();
+      let seq = 0;
+      for (const [p, o, r] of votes) agg.accept(`p${p}`, { kind: 'choice', seq: ++seq, o, r }, 0);
+      const players = new Set(votes.map(([p]) => p)).size;
+      for (let r = 0; r < 3; r++) assert.ok(agg.tally(r, 8).total <= players);
+    }),
+  );
+});
+
+test('votes from an old round do not count in the new one, and leaving removes a vote', () => {
+  const agg = createAggregator();
+  agg.accept('a', { kind: 'choice', seq: 1, o: 2, r: 1 }, 0);
+  agg.accept('b', { kind: 'choice', seq: 1, o: 2, r: 2 }, 0);
+  assert.deepEqual(agg.tally(2, 4), { counts: [0, 0, 1, 0], total: 1, leader: 2 });
+  agg.clearInputs('b');
+  assert.deepEqual(agg.tally(2, 4), { counts: [0, 0, 0, 0], total: 0, leader: null });
+});
+
+test('PBT: shake energy is never more than the shakers\' mean, and peak bounds it', () => {
+  fc.assert(
+    fc.property(
+      fc.array(fc.double({ min: 0, max: 1, noNaN: true }), { minLength: 1, maxLength: 30 }),
+      fc.nat(40),
+      (values, participants) => {
+        const agg = createAggregator();
+        values.forEach((v, i) => agg.accept(`p${i}`, { kind: 'shake', seq: 1, v }, 0));
+        const s = agg.shake(0, participants);
+        assert.equal(s.n, values.length);
+        assert.ok(s.energy <= s.v + 1e-12);
+        assert.ok(s.v <= s.peak + 1e-12);
+        assert.ok(s.peak <= 1 && s.energy >= 0);
+      },
+    ),
+  );
+});
+test('PBT: choice tally counts each player once and ignores arrival order', () => {
+  fc.assert(
+    fc.property(fc.array(fc.tuple(fc.integer({ min: 0, max: 5 }), fc.integer({ min: 0, max: 3 })), { minLength: 1, maxLength: 40 }), (votes) => {
+      const run = (list) => {
+        const agg = createAggregator();
+        list.forEach(([p, o], i) => agg.accept(`p${p}`, { kind: 'choice', seq: i, o, r: 1 }, 0));
+        return agg.tally(1, 4);
+      };
+      const t = run(votes);
+      assert.ok(t.total <= new Set(votes.map(([p]) => p)).size);
+      assert.equal(t.counts.reduce((a, b) => a + b, 0), t.total);
+      // Each player's last vote only, so a reversed stream with unique players matches.
+      const firstPerPlayer = [...new Map(votes.map(([p, o]) => [p, [p, o]])).values()];
+      assert.deepEqual(run(firstPerPlayer).counts, run([...firstPerPlayer].reverse()).counts);
+    }),
+  );
+});
+test('a replayed choice with a lower seq does not change the vote', () => {
+  const agg = createAggregator();
+  assert.equal(agg.accept('a', { kind: 'choice', seq: 5, o: 1, r: 1 }, 0), true);
+  assert.equal(agg.accept('a', { kind: 'choice', seq: 4, o: 2, r: 1 }, 0), false);
+  assert.deepEqual(agg.tally(1, 3).counts, [0, 1, 0]);
 });

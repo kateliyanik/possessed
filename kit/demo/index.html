@@ -22,12 +22,23 @@
       <h2>Checklist</h2>
       <ul id="checks" class="checks"></ul>
       <p id="verdict" class="verdict" role="status" aria-live="polite">Waiting for phones…</p>
+
+      <h2>Test other controls</h2>
+      <p class="small">Switches every phone, including ones that join later.</p>
+      <div class="modes" role="group" aria-label="Phone controls">
+        <button type="button" data-mode="tilt" aria-pressed="true">Tilt</button>
+        <button type="button" data-mode="choice" aria-pressed="false">Choice</button>
+        <button type="button" data-mode="tap" aria-pressed="false">Tap</button>
+        <button type="button" data-mode="shake" aria-pressed="false">Shake</button>
+      </div>
+      <ul id="controlChecks" class="checks"></ul>
       <button id="copy" type="button">Copy results</button>
       <button id="newRoom" type="button" class="quiet">New room</button>
     </aside>
 
     <section class="stage">
-      <canvas id="field" aria-label="Crowd position. The bright spirit is the room's combined tilt; faint marks are individual phones."></canvas>
+      <canvas id="field" aria-label="Crowd position. The bright spirit is the room's combined tilt."></canvas>
+      <div id="modeView" class="modeView" hidden aria-live="polite"></div>
       <div class="hud">
         <span id="status">Connecting…</span>
         <span id="count">0 phones</span>

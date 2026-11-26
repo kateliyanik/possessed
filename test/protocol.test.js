@@ -35,6 +35,31 @@ test('rejects bad envelopes', () => {
   assert.equal(parseClientMessage(Buffer.from('{}')).ok, false);
 });
 
+test('choice inputs need a whole option index and round, never clamped', () => {
+  const ok = parseClientMessage(enc({ t: 'input', kind: 'choice', seq: 1, o: 3, r: 7 }));
+  assert.deepEqual(ok.msg, { t: 'input', kind: 'choice', seq: 1, o: 3, r: 7 });
+  for (const bad of [{ o: 8, r: 0 }, { o: -1, r: 0 }, { o: 1.5, r: 0 }, { o: '1', r: 0 }, { o: 1, r: -1 }, { o: 1 }]) {
+    assert.equal(parseClientMessage(enc({ t: 'input', kind: 'choice', seq: 1, ...bad })).ok, false, JSON.stringify(bad));
+  }
+});
+
+test('PBT: any accepted choice is a valid option index', () => {
+  fc.assert(
+    fc.property(fc.anything(), fc.anything(), (o, r) => {
+      const res = parseClientMessage(JSON.stringify({ t: 'input', kind: 'choice', seq: 1, o, r }) ?? '');
+      if (res.ok) {
+        assert.ok(Number.isInteger(res.msg.o) && res.msg.o >= 0 && res.msg.o < LIMITS.maxOptions);
+        assert.ok(Number.isInteger(res.msg.r) && res.msg.r >= 0);
+      }
+    }),
+  );
+});
+
+test('shake needs a number', () => {
+  assert.equal(parseClientMessage(enc({ t: 'input', kind: 'shake', seq: 1 })).ok, false);
+  assert.equal(parseClientMessage(enc({ t: 'input', kind: 'shake', seq: 1, v: 9 })).msg.v, 1);
+});
+
 test('rejects messages over the size limit', () => {
   const big = enc({ t: 'ping', c: 1, pad: 'x'.repeat(LIMITS.maxMessageBytes) });
   assert.equal(parseClientMessage(big).error, 'too_large');
@@ -75,7 +100,7 @@ test('PBT: the parser never throws on arbitrary input', () => {
 });
 
 test('PBT: accepted messages only contain known fields', () => {
-  const allowed = new Set(['t', 'role', 'room', 'key', 'playerId', 'device', 'kind', 'seq', 'x', 'y', 'v', 'c', 'data', 'rtt', 'hz']);
+  const allowed = new Set(['t', 'role', 'room', 'key', 'playerId', 'device', 'kind', 'seq', 'x', 'y', 'v', 'o', 'r', 'c', 'data', 'rtt', 'hz']);
   fc.assert(
     fc.property(
       fc.record({
@@ -83,7 +108,9 @@ test('PBT: accepted messages only contain known fields', () => {
         role: fc.constantFrom('screen', 'phone'),
         room: fc.constantFrom('ABCD', 'zzzz'),
         playerId: fc.constantFrom('p1', 'bad id'),
-        kind: fc.constantFrom('tilt', 'tap', 'shake'),
+        kind: fc.constantFrom('tilt', 'tap', 'shake', 'choice'),
+        o: fc.integer({ min: -2, max: 10 }),
+        r: fc.integer({ min: -2, max: 10 }),
         seq: fc.nat(),
         x: fc.double({ noNaN: true, noDefaultInfinity: true }),
         y: fc.double({ noNaN: true, noDefaultInfinity: true }),
@@ -98,5 +125,24 @@ test('PBT: accepted messages only contain known fields', () => {
         if (r.ok) for (const k of Object.keys(r.msg)) assert.ok(allowed.has(k), k);
       },
     ),
+  );
+});
+test('choice input: valid option and round are accepted with only known fields', () => {
+  const r = parseClientMessage(enc({ t: 'input', kind: 'choice', seq: 1, o: 2, r: 7, evil: 'x' }));
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.msg, { t: 'input', kind: 'choice', seq: 1, o: 2, r: 7 });
+});
+test('PBT: choice is accepted only for an in-range integer option and round, and never altered', () => {
+  fc.assert(
+    fc.property(fc.anything(), fc.anything(), fc.nat(), (o, r, seq) => {
+      const res = parseClientMessage(enc({ t: 'input', kind: 'choice', seq, o, r }));
+      const valid =
+        Number.isInteger(o) && o >= 0 && o < LIMITS.maxOptions && Number.isInteger(r) && r >= 0 && r <= LIMITS.maxRound;
+      assert.equal(res.ok, valid);
+      if (res.ok) {
+        assert.equal(res.msg.o, o);
+        assert.equal(res.msg.r, r);
+      }
+    }),
   );
 });

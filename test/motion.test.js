@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fc from 'fast-check';
-import { FULL_TILT_DEG, anglesToTilt } from '../kit/client/motion.js';
+import { FULL_TILT_DEG, anglesToTilt, shakeEnergy } from '../kit/client/motion.js';
 
 test('level phone gives zero tilt', () => {
   const r = anglesToTilt(0, 0);
@@ -29,6 +29,24 @@ test('PBT: output always within -1..1 for any angles and rotation', () => {
         assert.ok(x >= -1 && x <= 1 && y >= -1 && y <= 1);
       },
     ),
+  );
+});
+
+test('shake energy: still is 0, a hard shake is 1', () => {
+  assert.equal(shakeEnergy(0, 0, 0), 0);
+  assert.equal(shakeEnergy(1, 1, 1), 0); // ordinary handling
+  assert.equal(shakeEnergy(25, 0, 0), 1);
+  assert.equal(shakeEnergy(null, undefined, 0), 0);
+});
+
+test('PBT: shake energy is within 0..1 and grows with acceleration', () => {
+  const acc = fc.double({ min: -80, max: 80, noNaN: true });
+  fc.assert(
+    fc.property(acc, acc, acc, fc.double({ min: 1, max: 3, noNaN: true }), (x, y, z, k) => {
+      const e = shakeEnergy(x, y, z);
+      assert.ok(e >= 0 && e <= 1);
+      assert.ok(shakeEnergy(x * k, y * k, z * k) >= e - 1e-12);
+    }),
   );
 });
 

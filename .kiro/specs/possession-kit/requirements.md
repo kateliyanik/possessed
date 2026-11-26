@@ -40,6 +40,20 @@ PossessionKit lets a group of people control one shared screen with their phones
 6. WHEN a phone leaves THE aggregator SHALL stop counting its input at once.
 7. THE aggregated tilt SHALL be the mean of current inputs, SHALL be exactly independent of the order players arrive in, and SHALL stay within -1..1.
 8. A player who sends more messages, or reconnects, SHALL NOT gain more influence than a player who sends one message.
+9. WHEN a phone reconnects on a new connection THE SYSTEM SHALL count that connection's inputs, even if its sequence numbers are lower than an earlier connection's. *(Added after the reconnect property test found an older tab that lost its vote; see `docs/kiro-usage-log.md`.)*
+10. THE SYSTEM SHALL relay input only from a player's current connection.
+11. THE aggregator SHALL tally multiple-choice votes per round: one vote per player, latest choice wins, votes from other rounds ignored, and no leader when the top options tie.
+12. THE aggregator SHALL report shake as the shakers' mean, the strongest single shake, and the room's energy (total shake divided by everyone online), so one phone cannot fill the meter alone.
+
+## Requirement 6: Phone controls chosen by the screen
+
+**User story:** As an app builder, I want to tell every phone which controls to show, so each app can ask the room different things.
+
+1. THE screen SHALL choose phone controls by sending a `ui` object with mode `tilt`, `choice`, `tap`, `shake` or `wait`, an optional prompt, options and round.
+2. THE phone SHALL validate the `ui` object, render all of its text as plain text, and limit prompt and option lengths.
+3. WHEN a phone joins late, or the screen reconnects, THE phone SHALL show the screen's current controls.
+4. THE phone SHALL offer touch as a first-class choice on its start screen and remember it.
+5. EVERY motion control SHALL have a touch alternative: tilt by dragging a pad, shake by tapping fast.
 
 ## Requirement 4: Trust boundary and abuse limits
 

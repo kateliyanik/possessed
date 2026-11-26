@@ -15,7 +15,10 @@ inclusion: always
 ## Protocol
 - All client messages go through `parseClientMessage` in `kit/shared/protocol.js`. Add a new message type there first, with tests, then use it.
 - The screen is authoritative for app state. Phones send inputs; the screen aggregates and broadcasts `state`.
-- Inputs carry a per-phone increasing `seq`. Aggregation keeps only the latest input per player.
+- Inputs carry a per-phone increasing `seq`; the server adds a per-connection epoch `e`. Aggregation orders by (`e`, `seq`) and keeps only the latest input per player. Never compare `seq` alone: an older tab that reconnects has lower `seq` values (see `test/reconnect.test.js`).
+- The server only relays input from a player's current connection.
+- Phone controls are chosen by the screen: put a `ui` object in broadcast state (`kit/shared/ui.js`). Phones validate it with `parseUi`.
+- Every app must broadcast its current `ui` in its `onRoom` callback. After a screen reload the server still holds the old state, and phones would otherwise keep showing stale controls.
 
 ## Trust boundary
 - Treat every WebSocket message and query parameter as untrusted. Validate type, range and size; clamp numbers.

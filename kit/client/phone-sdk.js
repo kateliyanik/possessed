@@ -106,6 +106,11 @@ export function createPhone({ room, onState = () => {}, onStatus = () => {}, onS
     socket.send({ t: 'input', kind: 'shake', seq: next(), v: round(v) });
   }
 
+  // Vote for option o in round r of a multiple-choice question.
+  function choice(o, r) {
+    return socket.send({ t: 'input', kind: 'choice', seq: next(), o, r });
+  }
+
   const statsTimer = setInterval(() => {
     hz = (sentThisWindow * 1000) / STATS_MS;
     sentThisWindow = 0;
@@ -121,6 +126,7 @@ export function createPhone({ room, onState = () => {}, onStatus = () => {}, onS
     release,
     tap,
     shake,
+    choice,
     stats: () => ({ rtt, hz }),
     close() {
       clearInterval(sendTimer);
