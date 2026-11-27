@@ -105,6 +105,7 @@ Open notes:
 - The report has no "Other controls" section, so the screen page was loaded before the Pit Stop 2 changes. Choice, tap, shake and the reconnect fix have **not** been tried on real phones yet. Re-check them briefly at the start of the Pit Stop 3 real-phone test.
 - Both phones showed 0 inputs/s at the moment of copying. A phone that is tilting sends at least 2–3 per second, so at that moment neither was sending tilt (for example, finger lifted on the touch pad, or the page in the background). Worth watching in the next test.
 - No notes yet on how it felt (lag, drift, jumpiness).
+- 26 Nov, 5-minute re-check with the Pit Stop 2 page, Android only: choice, tap and shake all arrived; median round trip 113 ms. The FAIL lines in that report are expected (one phone, 5 of 10 minutes, no Wi-Fi drop), not regressions. **Still untested on an iPhone:** choice, tap, shake and the reconnect fix.
 
 ---
 
@@ -117,10 +118,10 @@ Open notes:
 - [x] Record any bug PBT catches in `docs/kiro-usage-log.md`. **Caught one:** an older tab that reconnected after a newer tab had zero influence. Fixed with per-connection epochs; regression test added; verified the tests fail without the fix.
 
 ## Pit Stop 3: Spirit Board (YOU ARE HERE)
-- [ ] Spec in `.kiro/specs/spirit-board/`.
-- [ ] Original spirit-board design (do not use the word "Ouija" anywhere).
-- [ ] Planchette physics, letter dwell detection, answer reveal.
-- [ ] Phone UI for the app.
+- [x] Spec in `.kiro/specs/spirit-board/`.
+- [x] Original spirit-board design (do not use the word "Ouija" anywhere).
+- [x] Planchette physics, letter dwell detection, answer reveal.
+- [x] Phone UI for the app (the generic kit phone page, with prompts set by the screen). Real-room tuning (task 6) is still yours.
 
 ## Pit Stop 4: Possessed Talk
 - [ ] Spec in `.kiro/specs/possessed-talk/`.
@@ -159,3 +160,4 @@ Open notes:
 | 26 Nov 2026 | Phase 1 built in the `Kiroween 2026` folder: protocol, aggregation, server, phone page, feasibility screen, simulator, 39 passing tests, Kiro spec/steering/hooks. Pushed to github.com/kateliyanik/possessed. | Request Kiro credits. Then run the Pit Stop 1 test on real phones and paste the result. |
 | 26 Nov 2026 | Pit Stop 2 done (ahead of the real-phone test). Reconnect property test found and shrank a real bug (older reconnecting tab lost its vote); fixed with connection epochs. Added choice/tap/shake, screen-chosen phone controls, touch-first option, headless Chrome test. 62 unit/integration tests + 25 browser checks pass. | Run the Pit Stop 1 real-phone test (now also covers choice/tap/shake). If it passes, start Pit Stop 3 (Spirit Board). Pit Stop 3 can start before the test, but its tilt feel depends on the result. |
 | 26 Nov 2026 | Pit Stop 1 real-phone test: **PASS** (iPhone + Android, 14 min, 1 automatic rejoin, median round trip 116 ms). The test ran on the Pit Stop 1 page, so the Pit Stop 2 controls are still untested on real phones. | Start Pit Stop 3: write the Spirit Board spec. |
+| 26 Nov 2026 | Pit Stop 3 build done: Spirit Board spec, pure logic with property tests, screen page (board, phases, candles, agreement meter, URL tuning), generated sound, browser test (30 checks). Kit gained `coherence()` and `lastJoinAt`. 79 tests + 25 smoke + 30 Spirit Board browser checks pass. Android re-check of choice/tap/shake passed. | Real-room test of the Spirit Board with 3+ people on real phones (also try choice/tap/shake and a Wi-Fi drop on an iPhone), listen to the sound, tune `accel`, `friction`, `assist`, `dwell`. Then start Pit Stop 4: Possessed Talk spec. |

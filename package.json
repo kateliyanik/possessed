@@ -13,6 +13,7 @@
     "dev": "node --watch kit/server/index.js",
     "test": "node --test \"test/**/*.test.js\"",
     "test:browser": "node test/browser/smoke.mjs",
+    "test:browser:spirit": "node test/browser/spirit-board.mjs",
     "sim": "node kit/tools/simulate.js"
   },
   "dependencies": {

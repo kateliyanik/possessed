@@ -77,6 +77,7 @@ export function createScreen({
     },
     qrUrl: (app) => (room ? `/qr?room=${room}${app ? `&app=${encodeURIComponent(app)}` : ''}` : null),
     tilt: () => agg.tilt(performance.now()),
+    coherence: () => agg.coherence(performance.now()),
     influence: () => agg.influence(performance.now()),
     shake: (participants) => agg.shake(performance.now(), participants),
     taps: (windowMs) => agg.taps(performance.now(), windowMs),

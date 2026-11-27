@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POSSESSED · Spirit Board</title>
+  <link rel="stylesheet" href="board.css">
+</head>
+<body class="phase-practice">
+  <main class="stage">
+    <section class="board-col">
+      <header class="question-bar">
+        <p id="phaseLabel" class="phase">Practice</p>
+        <h1 id="questionText">Move the planchette together</h1>
+        <p id="spelled" class="spelled" aria-live="polite"></p>
+      </header>
+      <div class="board-wrap">
+        <svg id="board" viewBox="-1.3 -1.3 2.6 2.6" role="img" aria-labelledby="boardTitle">
+          <title id="boardTitle">Spirit board. The glowing ghost is the planchette, moved by everyone's phones together.</title>
+        </svg>
+        <div id="reveal" class="reveal" hidden>
+          <p class="reveal-label">The spirits answered</p>
+          <p id="answer" class="answer"></p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <p class="brand">POSSESSED · Spirit Board</p>
+
+      <div class="join">
+        <img id="qr" alt="QR code to join with your phone" width="200" height="200">
+        <p class="code">Room <strong id="room">----</strong></p>
+        <p class="join-url" id="joinUrl"></p>
+      </div>
+
+      <div class="listening">
+        <p class="label">The spirit is listening</p>
+        <div class="meter" aria-hidden="true"><div id="agree" class="fill"></div></div>
+        <p id="agreeText" class="detail" aria-live="off">Nobody is steering yet</p>
+        <p id="count" class="detail">0 candles lit</p>
+      </div>
+
+      <section id="hostPractice" class="host">
+        <label for="question">Ask the spirits</label>
+        <input id="question" type="text" maxlength="90" autocomplete="off" placeholder="Type a question, then press Enter">
+        <div id="presets" class="presets"></div>
+        <button id="begin" type="button" class="primary">Begin the séance</button>
+      </section>
+
+      <section id="hostSeance" class="host" hidden>
+        <button id="end" type="button" class="primary">End the séance</button>
+        <button id="cancel" type="button">Back to practice <kbd>Esc</kbd></button>
+      </section>
+
+      <section id="hostReveal" class="host" hidden>
+        <button id="again" type="button" class="primary">Ask again</button>
+      </section>
+
+      <button id="sound" type="button" class="quiet" aria-pressed="false">Sound: off</button>
+    </aside>
+  </main>
+  <script type="module" src="board.js"></script>
+</body>
+</html>

@@ -123,6 +123,25 @@ export function createAggregator({ staleMs = DEFAULT_STALE_MS } = {}) {
     return { x: clamp(sx / n, -1, 1), y: clamp(sy / n, -1, 1), n };
   }
 
+  // How much the room agrees: |mean tilt| / mean |tilt|, from 0 to 1.
+  // 1 when everyone pushes the same way, near 0 when pushes cancel out.
+  // 0 when nobody is tilting.
+  function coherence(now) {
+    let sx = 0;
+    let sy = 0;
+    let sm = 0;
+    for (const id of sortedIds()) {
+      const t = players.get(id).tilt;
+      if (t && isFresh(t.at, now)) {
+        sx += t.x;
+        sy += t.y;
+        sm += Math.hypot(t.x, t.y);
+      }
+    }
+    if (sm < 1e-9) return 0;
+    return clamp(Math.hypot(sx, sy) / sm, 0, 1);
+  }
+
   // Each player's share of the total tilt magnitude, for the influence
   // display. Shares sum to 1 when anyone is tilting.
   function influence(now) {
@@ -184,5 +203,5 @@ export function createAggregator({ staleMs = DEFAULT_STALE_MS } = {}) {
     return players.size;
   }
 
-  return { accept, remove, clearInputs, tilt, influence, shake, taps, tally, size };
+  return { accept, remove, clearInputs, tilt, coherence, influence, shake, taps, tally, size };
 }

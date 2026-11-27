@@ -162,6 +162,42 @@ test('a reconnection with lower sequence numbers still counts', () => {
   assert.equal(agg.accept('p', { kind: 'tilt', seq: 2_000_002, e: 1, x: 1, y: 0 }, 0), false);
 });
 
+// ---------- agreement (coherence) ----------
+
+test('coherence: everyone the same way is 1, opposite pushes are 0, nobody is 0', () => {
+  const agg = createAggregator();
+  assert.equal(agg.coherence(0), 0);
+  agg.accept('a', { kind: 'tilt', seq: 1, x: 0.5, y: 0 }, 0);
+  agg.accept('b', { kind: 'tilt', seq: 1, x: 0.5, y: 0 }, 0);
+  assert.equal(agg.coherence(0), 1);
+  agg.accept('b', { kind: 'tilt', seq: 2, x: -0.5, y: 0 }, 0);
+  assert.equal(agg.coherence(0), 0);
+});
+
+test('PBT: coherence is within 0..1, order-independent and unchanged by scaling', () => {
+  fc.assert(
+    fc.property(
+      fc.uniqueArray(fc.tuple(fc.stringMatching(/^[a-z]{1,5}$/), unit, unit), { minLength: 1, maxLength: 20, selector: (t) => t[0] }),
+      fc.double({ min: 0.1, max: 1, noNaN: true }),
+      (tilts, k) => {
+        const a = createAggregator();
+        const b = createAggregator();
+        const c = createAggregator();
+        for (const [id, x, y] of tilts) a.accept(id, { kind: 'tilt', seq: 1, x, y }, 0);
+        for (const [id, x, y] of [...tilts].reverse()) b.accept(id, { kind: 'tilt', seq: 1, x, y }, 0);
+        for (const [id, x, y] of tilts) c.accept(id, { kind: 'tilt', seq: 1, x: x * k, y: y * k }, 0);
+        const h = a.coherence(0);
+        assert.ok(h >= 0 && h <= 1);
+        assert.equal(h, b.coherence(0));
+        // Scaling every tilt by the same amount does not change agreement.
+        // (Skip near-zero rooms, where rounding dominates.)
+        const total = tilts.reduce((s, [, x, y]) => s + Math.hypot(x, y), 0);
+        if (total > 1e-3) assert.ok(Math.abs(h - c.coherence(0)) < 1e-6);
+      },
+    ),
+  );
+});
+
 test('stale inputs drop out after the window', () => {
   const agg = createAggregator({ staleMs: 1000 });
   agg.accept('a', { kind: 'tilt', seq: 1, x: 1, y: 0 }, 0);

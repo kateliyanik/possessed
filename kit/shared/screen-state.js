@@ -13,7 +13,7 @@ export function createScreenState({ staleMs, now = () => performance.now() } = {
   function player(id, device) {
     let p = players.get(id);
     if (!p) {
-      p = { id, device: device || 'other', online: false, joins: 0, rtt: null, hz: 0, lastInputAt: 0 };
+      p = { id, device: device || 'other', online: false, joins: 0, rtt: null, hz: 0, lastInputAt: 0, lastJoinAt: 0 };
       players.set(id, p);
     }
     if (device) p.device = device;
@@ -40,6 +40,7 @@ export function createScreenState({ staleMs, now = () => performance.now() } = {
         if (p.joins > 0 && (!p.online || msg.replaced)) rejoins++;
         p.joins++;
         p.online = true;
+        p.lastJoinAt = now();
         return 'players';
       }
       case 'left': {

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Trademark check",
+      "description": "Keep the trademarked name out of the spirit board app and all user-facing text.",
+      "trigger": "PostFileSave",
+      "matcher": "(apps/.*[^/]*$|kit/client/.*[^/]*$|kit/demo/.*[^/]*$|README\\.md$)",
+      "action": {
+        "type": "agent",
+        "prompt": "Check the edited file for the word 'Ouija' in any letter case, including in identifiers, file names, alt text and comments. The product rule is to say 'spirit board' instead. Replace any occurrence and report it. Also flag any third-party logo, font or audio file that is not original or clearly licensed."
+      },
+      "enabled": true
+    }
+  ]
+}
